@@ -34,13 +34,49 @@ public class Program
         Random random = new Random();
         List<Sample> mnistTrain = ReadMNIST("D:/data/mnist_train.csv", max: 1000);
         List<Sample> mnistTest = ReadMNIST("D:/data/mnist_test.csv", max: 1000);
+        int totalClassCount = 10;
+        int startingComponentCount = mnistTrain[0].input.Count;
 
-        List<Sample> mnistValidate = mnistTrain.GetRange(500, 500);
-        mnistTrain.RemoveRange(500, 500);
+        // find homogenous
+        List<int> homogenousComponents = new List<int>();
+        for (int i = 0; i < startingComponentCount; i++)
+        {
+            float zeroValue = mnistTrain[0].input[i];
+            bool homogeneous = true;
+            for (int j = 1; j < mnistTrain.Count; j++)
+            {
+                if (mnistTrain[j].input[i] != zeroValue)
+                {
+                    homogeneous = false;
+                    break;
+                }
+            }
+            if (homogeneous)
+            {
+                homogenousComponents.Add(i);
+            }
+        }
 
+        // remove homogenous from train and test
+        foreach(Sample sample in mnistTrain)
+        {
+            for (int i = homogenousComponents.Count - 1; i >= 0; i--)
+            {
+                sample.input.RemoveAt(homogenousComponents[i]);
+            }
+        }
+        foreach (Sample sample in mnistTest)
+        {
+            for (int i = homogenousComponents.Count - 1; i >= 0; i--)
+            {
+                sample.input.RemoveAt(homogenousComponents[i]);
+            }
+        }
 
-        KPools kPools = new KPools(dimensionPerPool: 10, classSamplesPerPool: 5, targetPoolCount: 100, growToPoolCount: 200, mnistTrain, mnistValidate);
-        float testFitness = kPools.Fitness(mnistTest);
+        PerfectFeatureDetector pfd = new PerfectFeatureDetector(totalClassCount, conditionCount: 2, minimumEvidence: 10, mnistTrain);
+
+        int correct = mnistTest.Count(sample => pfd.Predict(sample.input) == sample.output);
+        float testFitness = (float)correct / (float)mnistTest.Count;
 
         Console.WriteLine("Test Fitness: " + testFitness);
         Console.ReadLine();
