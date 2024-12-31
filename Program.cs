@@ -32,7 +32,7 @@ public class Program
     public static void Main()
     {
         Random random = new Random();
-        List<Sample> mnistTrain = ReadMNIST("D:/data/mnist_train.csv", max: 1000);
+        List<Sample> mnistTrain = ReadMNIST("D:/data/mnist_train.csv", max: -1);
         List<Sample> mnistTest = ReadMNIST("D:/data/mnist_test.csv", max: 1000);
         int totalClassCount = 10;
         int startingComponentCount = mnistTrain[0].input.Count;
@@ -73,7 +73,7 @@ public class Program
             }
         }
 
-        PerfectFeatureDetector pfd = new PerfectFeatureDetector(totalClassCount, conditionCount: 2, minimumEvidence: 10, mnistTrain);
+        PerfectFeatureDetector pfd = new PerfectFeatureDetector(totalClassCount, conditionCount: 1, minimumEvidence: 1, mnistTrain);
 
         int correct = mnistTest.Count(sample => pfd.Predict(sample.input) == sample.output);
         float testFitness = (float)correct / (float)mnistTest.Count;

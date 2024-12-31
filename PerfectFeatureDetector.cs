@@ -31,7 +31,7 @@ public class PerfectFeatureDetector
         for (; ;)
         {
             log++;
-            if (log % 1000 == 0)
+            if (log % 10 == 0)
             {
                 Console.Write($"\r{iterator.GetProgressString(allComponentValues)} -> [{string.Join(',', distribution)}]");
             }
@@ -86,10 +86,16 @@ public class PerfectFeatureDetector
     public int CheckPerfect(List<Sample> samples, int minimalEvidence, int[] votes, ConditionalPrediction conditionalPrediction)
     {
         Array.Clear(votes);
+        int lastVote = -1;
         foreach(Sample sample in samples)
         {
             if (conditionalPrediction.Satisfies(sample.input))
             {
+                if (lastVote != -1 && lastVote != sample.output)
+                {
+                    return -1;
+                }
+                lastVote = sample.output;
                 votes[sample.output]++;
             }
         }
